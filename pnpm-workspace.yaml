@@ -43,7 +43,8 @@ trustPolicyIgnoreAfter: 1051200
 
 # Per-version exemptions for legitimate downgrades. Start empty;
 # populate only with a concrete justification per entry.
-trustPolicyExclude: []
+trustPolicyExclude:
+ - chokidar@4.0.3
 
 # Security: force patched versions of transitive dependencies whose parents
 # pin vulnerable ranges (Dependabot alerts). Remove each entry once the

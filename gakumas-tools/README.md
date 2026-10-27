@@ -19,9 +19,11 @@ Enter the project directory and install dependencies:
 cd gakumas-tools && pnpm install
 ```
 
-Run the project in dev mode
-```
-pnpm dev
+Run the project in dev mode  
+**in pnpm ver 12.15.0** (This is a temporary measure.)
+```diff
+- pnpm dev
++ pnpm_config_pm_on_fail=ignore pnpm dev
 ```
 
 Open `http://localhost:3000` to view the app.
