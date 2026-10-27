@@ -16,6 +16,7 @@ import ModalLoading from "@/components/Modal/ModalLoading";
 import DataContext from "@/contexts/DataContext";
 import ModalContext from "@/contexts/ModalContext";
 import styles from "./Memories.module.scss";
+import { DISCORD_AUTH_ENABLED } from "@/utils/authAvailability";
 
 const MemoryImporterModal = dynamic(
   () => import("@/components/MemoryImporterModal"),
@@ -57,7 +58,11 @@ function MemoriesNudge({ filtered }) {
         <>
           <p className={styles.nudgeText}>{t("signInHint")}</p>
           <div className={styles.nudgeActions}>
-            <Button style="primary" onClick={() => signIn("discord")}>
+            <Button
+              style="primary"
+              disabled={!DISCORD_AUTH_ENABLED}
+              onClick={() => signIn("discord")}
+            >
               <FaDiscord /> {t("signIn")}
             </Button>
             <Button onClick={() => setModal(<MemoryEditorModal />)}>

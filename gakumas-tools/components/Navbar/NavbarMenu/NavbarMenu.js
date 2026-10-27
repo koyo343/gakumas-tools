@@ -9,6 +9,7 @@ import IconButton from "@/components/IconButton";
 import Image from "@/components/Image";
 import { Link, usePathname } from "@/i18n/routing";
 import c from "@/utils/classNames";
+import { DISCORD_AUTH_ENABLED } from "@/utils/authAvailability";
 import styles from "./NavbarMenu.module.scss";
 
 const discordSignIn = () => signIn("discord");
@@ -61,7 +62,12 @@ function NavbarMenu() {
         >
           {status == "unauthenticated" && (
             <div className={styles.signIn}>
-              <Button style="primary" onClick={discordSignIn} fill>
+              <Button
+                style="primary"
+                onClick={discordSignIn}
+                disabled={!DISCORD_AUTH_ENABLED}
+                fill
+              >
                 {t("signInWithDiscord")}
               </Button>
             </div>

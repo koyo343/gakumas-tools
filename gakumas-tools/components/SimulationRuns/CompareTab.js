@@ -1,6 +1,7 @@
 "use client";
 import { memo, useContext, useEffect, useMemo } from "react";
 import { useSession, signIn } from "next-auth/react";
+import { DISCORD_AUTH_ENABLED } from "@/utils/authAvailability";
 import { useTranslations } from "next-intl";
 import ButtonGroup from "@/components/ButtonGroup";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -143,6 +144,7 @@ function CompareTab({ currentRun, onAfterLoad }) {
   }, [allPools]);
 
   function promptSignIn() {
+    if (!DISCORD_AUTH_ENABLED) return;
     setModal(
       <ConfirmModal
         message={t("signInPrompt")}

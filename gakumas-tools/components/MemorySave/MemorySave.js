@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import MemoryContext from "@/contexts/MemoryContext";
 import styles from "./MemorySave.module.scss";
+import { DISCORD_AUTH_ENABLED } from "@/utils/authAvailability";
 
 function MemorySave() {
   const t = useTranslations("MemorySave");
@@ -20,7 +21,7 @@ function MemorySave() {
 
   return (
     <div className={styles.save}>
-      {status == "unauthenticated" && (
+      {DISCORD_AUTH_ENABLED && status == "unauthenticated" && (
         <Button style="primary" onClick={signInToSave}>
           {t("signInToSave")}
         </Button>
