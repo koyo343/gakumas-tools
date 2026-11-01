@@ -327,7 +327,10 @@
     "parameters": "パラメータ",
     "pItems": "Pアイテム",
     "skillCards": "スキルカード",
-    "customizations": "カスタマイズ"
+    "customizations": "カスタマイズ",
+    "confirmDiscard": "保存していない変更を破棄しますか？",
+    "discard": "破棄する",
+    "keepEditing": "編集を続ける"
   },
   "ParametersInput": {
     "stamina": "体力"
@@ -407,6 +410,7 @@
     "preparing": "読み取りの準備中…（初回は数MBをダウンロードします）",
     "saving": "保存中…",
     "failed": "読み込みに失敗しました。スクショを確認してもう一度お試しください。",
+    "unreadable": "読み取れなかったスクショ: {files}",
     "selectScreenshots": "スクリーンショットを選択",
     "dropHint": "タップして選択、またはスクリーンショットをここにドロップ"
   },
@@ -422,7 +426,8 @@
     "provideData": "データを提供する",
     "lastUpdated": "最終更新",
     "start": "開始",
-    "restart": "再開"
+    "restart": "再開",
+    "simulationFailed": "シミュレーション中にエラーが発生しました。もう一度実行するか、編成を変更してください。"
   },
   "StrategyPicker": {
     "auto": "自動",
@@ -488,6 +493,7 @@
     "share": "共有",
     "openLoadouts": "編成",
     "import": "読み込み",
+    "copyFailed": "URLをコピーできませんでした",
     "readLoadoutFromUrl": "URL読み込み",
     "invalidUrl": "有効なURLではありません。",
     "invalidLoadout": "URLから編成を読み込めません。",
@@ -510,7 +516,8 @@
     "more": "その他…",
     "x": "Xで共有",
     "saveImage": "画像として保存",
-    "exporting": "保存中…"
+    "exporting": "保存中…",
+    "exportFailed": "保存できませんでした。再試行"
   },
   "ConfirmModal": {
     "cancel": "キャンセル",
@@ -570,7 +577,10 @@
     "allStages": "全ステージ",
     "actions": "操作",
     "loadFailed": "保存済み編成を読み込めませんでした。",
-    "retry": "再試行"
+    "retry": "再試行",
+    "saveFailed": "保存に失敗",
+    "renameFailed": "名前変更に失敗",
+    "deleteFailed": "削除に失敗"
   },
   "SimulatorStats": {
     "total": "合計",
@@ -728,7 +738,9 @@
     "needsChecking": "{count}件の行を確認してください",
     "confirmRow": "この行の値が正しいことを確認",
     "selectFiles": "ファイルを選択",
-    "addRow": "行を追加"
+    "addRow": "行を追加",
+    "clear": "クリア",
+    "confirmClear": "すべての行を削除しますか？"
   },
   "RehearsalComparison": {
     "addResults": "リハーサル結果を追加",

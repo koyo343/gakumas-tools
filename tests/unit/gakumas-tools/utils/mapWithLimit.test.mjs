@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { setTimeout as sleep } from "node:timers/promises";
-import { mapWithLimit } from "../gakumas-tools/utils/mapWithLimit.js";
+import { mapWithLimit } from "../../../../gakumas-tools/utils/mapWithLimit.js";
 
 async function* items(values, onPull) {
   for (const v of values) {

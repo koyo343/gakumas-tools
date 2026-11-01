@@ -7,7 +7,7 @@ import {
   likelyMisPick,
   rehearsalGrid,
   validateComparison,
-} from "../gakumas-tools/utils/rehearsalComparison.js";
+} from "../../../../gakumas-tools/utils/rehearsalComparison.js";
 
 const row = (scores, flags = ["ok", "ok", "ok"]) => ({ scores, flags });
 

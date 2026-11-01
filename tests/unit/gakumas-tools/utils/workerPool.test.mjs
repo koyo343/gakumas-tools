@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { setTimeout as sleep } from "node:timers/promises";
-import { createWorkerPool } from "../gakumas-tools/utils/workerPool.js";
+import { createWorkerPool } from "../../../../gakumas-tools/utils/workerPool.js";
 
 function trackedPool(opts) {
   const created = [];

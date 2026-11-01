@@ -1,34 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { deserializeEffectSequence, Stages } from "gakumas-data";
-import {
-  IdolConfig,
-  IdolStageConfig,
-  S,
-  StageConfig,
-  StageEngine,
-} from "gakumas-engine";
-
-function createEngine() {
-  const idol = new IdolConfig({
-    params: [100, 100, 100, 30],
-    supportBonus: 0,
-    pItemIds: [],
-    skillCardIdGroups: [[19]],
-    customizationGroups: [[]],
-  });
-  const stage = new StageConfig(Stages.getById(1));
-  return new StageEngine(new IdolStageConfig(idol, stage));
-}
-
-function createState(engine) {
-  engine.logger.disable();
-  return engine.getInitialState(true);
-}
+import { deserializeEffectSequence } from "gakumas-data";
+import { S } from "gakumas-engine";
+import { createEngine } from "../helpers.mjs";
 
 test("enthusiasm is cleared at the end of the turn", () => {
   const engine = createEngine();
-  const state = createState(engine);
+  const state = engine.getInitialState(true);
   state[S.enthusiasm] = 10;
 
   engine.turnManager.endTurn(state);
@@ -38,7 +16,7 @@ test("enthusiasm is cleared at the end of the turn", () => {
 
 test("enthusiasm extension keeps enthusiasm through the next turn", () => {
   const engine = createEngine();
-  const state = createState(engine);
+  const state = engine.getInitialState(true);
   state[S.enthusiasm] = 10;
   state[S.enthusiasmExtensionTurns] = 1;
 
@@ -52,7 +30,7 @@ test("enthusiasm extension keeps enthusiasm through the next turn", () => {
 
 test("an end-of-turn extension applies to the turn it is registered in", () => {
   const engine = createEngine();
-  const state = createState(engine);
+  const state = engine.getInitialState(true);
   state[S.enthusiasm] = 10;
 
   engine.effectManager.triggerEffects(

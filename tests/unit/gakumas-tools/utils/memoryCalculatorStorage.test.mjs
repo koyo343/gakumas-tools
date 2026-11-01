@@ -4,7 +4,7 @@ import {
   MEMORY_CALCULATOR_STORAGE_KEY,
   loadMemoryCalculatorState,
   saveMemoryCalculatorState,
-} from "../gakumas-tools/utils/memoryCalculatorStorage.js";
+} from "../../../../gakumas-tools/utils/memoryCalculatorStorage.js";
 
 function createMemoryStorage(initial = {}) {
   const values = new Map(Object.entries(initial));

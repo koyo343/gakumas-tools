@@ -10,7 +10,7 @@ import {
   isObjectIdList,
   readJsonBody,
   validateLoadout,
-} from "../gakumas-tools/utils/apiValidation.js";
+} from "../../../../gakumas-tools/utils/apiValidation.js";
 
 const ID = "652f1c2b9d3e4a0012345678";
 

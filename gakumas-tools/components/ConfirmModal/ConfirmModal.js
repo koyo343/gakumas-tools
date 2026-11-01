@@ -8,6 +8,7 @@ import styles from "./ConfirmModal.module.scss";
 export default function ConfirmModal({
   message,
   confirmLabel,
+  cancelLabel,
   danger,
   onConfirm,
   onCancel,
@@ -33,7 +34,7 @@ export default function ConfirmModal({
       <div className={styles.buttons}>
         {showCancel && (
           <Button style="default" fill onClick={cancel}>
-            {t("cancel")}
+            {cancelLabel || t("cancel")}
           </Button>
         )}
         <Button style={danger ? "red" : "primary"} fill onClick={confirm}>

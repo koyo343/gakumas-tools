@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Stages } from "gakumas-data";
-import { findStageCandidates } from "../gakumas-tools/utils/supportBonus.js";
+import { findStageCandidates } from "../../../../gakumas-tools/utils/supportBonus.js";
 
 const bestStage = (...args) => findStageCandidates(...args)[0] ?? null;
 

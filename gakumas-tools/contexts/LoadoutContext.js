@@ -19,7 +19,7 @@ import {
   getStage,
   knownStageId,
 } from "@/utils/simulator";
-import { getMemoryParamContribution } from "@/utils/stamina";
+import { setMemorySlot } from "@/utils/memorySlots";
 import { fixCustomizations } from "@/utils/customizations";
 import { DEFAULTS } from "@/utils/simulator";
 import { deserializeIds } from "@/utils/ids";
@@ -38,7 +38,7 @@ export function LoadoutContextProvider({ children }) {
 
   const initialLoadout = loadoutsFromUrl[0] || loadoutFromUrl;
 
-  const [memoryParams, setMemoryParams] = useState([null, null]);
+  const [memorySlots, setMemorySlots] = useState([null, null]);
   const [stageId, setStageId] = useState(initialLoadout.stageId);
   const [customStage, setCustomStage] = useState(null);
   const [supportBonus, setSupportBonus] = useState(initialLoadout.supportBonus);
@@ -172,6 +172,7 @@ export function LoadoutContextProvider({ children }) {
       setCustomStage(custom);
     }
     setSupportBonus(loadout.supportBonus);
+    setMemorySlots([null, null]);
     setParams(loadout.params);
     setPItemIds(loadout.pItemIds);
     setPDrinkIds(loadout.pDrinkIds || deserializeIds(DEFAULTS.pDrinkIds));
@@ -249,7 +250,7 @@ export function LoadoutContextProvider({ children }) {
   useEffect(() => {
     if (pathname !== "/simulator" && pathname !== "/contest-player") return;
     updateUrl(loadout, loadouts);
-  }, [loadout]);
+  }, [loadout, loadouts]);
 
   // Update link loadouts when loadout changes
   useEffect(() => {
@@ -311,13 +312,13 @@ export function LoadoutContextProvider({ children }) {
 
   const stageRef = useRef(stage);
   stageRef.current = stage;
-  const memoryParamsRef = useRef(memoryParams);
-  memoryParamsRef.current = memoryParams;
+  const memorySlotsRef = useRef(memorySlots);
+  memorySlotsRef.current = memorySlots;
   const paramsRef = useRef(params);
   paramsRef.current = params;
 
   const clear = useCallback(() => {
-    setMemoryParams([null, null]);
+    setMemorySlots([null, null]);
     setParams(getDefaultParams(stageRef.current));
     setPItemIds((cur) => new Array(cur.length).fill(0));
     if (stage.type === "exam") {
@@ -887,34 +888,16 @@ export function LoadoutContextProvider({ children }) {
 
   const setMemory = useCallback((memory, index) => {
     const stage = stageRef.current;
-    const memoryParams = memoryParamsRef.current;
     const multiplier = stage.type !== "linkContest" && index ? 0.2 : 1;
-
-    if (!memoryParams.some((p) => p)) {
-      setParams([0, 0, 0, 0]);
-    } else if (memoryParams[index]) {
-      // If there is currently a memory in that slot, remove its params
-      setParams((curParams) =>
-        curParams.map(
-          (p, i) =>
-            (p || 0) -
-            getMemoryParamContribution(memoryParams[index][i], multiplier),
-        )
-      );
-    }
-
-    // Set memory
-    setMemoryParams((cur) => {
-      const next = [...cur];
-      next[index] = memory.params;
-      return next;
-    });
-    setParams((curParams) =>
-      curParams.map(
-        (p, i) =>
-          (p || 0) + getMemoryParamContribution(memory.params[i], multiplier),
-      )
+    const applied = setMemorySlot(
+      { params: paramsRef.current, slots: memorySlotsRef.current },
+      index,
+      memory.params,
+      multiplier,
     );
+
+    setMemorySlots(applied.slots);
+    setParams(applied.params);
     if (index == 0) {
       setPItemIds(memory.pItemIds);
     }

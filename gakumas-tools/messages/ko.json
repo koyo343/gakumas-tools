@@ -319,7 +319,10 @@
     "parameters": "패러미터",
     "pItems": "P아이템",
     "skillCards": "스킬 카드",
-    "customizations": "커스터마이즈"
+    "customizations": "커스터마이즈",
+    "confirmDiscard": "저장하지 않은 변경 사항을 버릴까요?",
+    "discard": "버리기",
+    "keepEditing": "계속 편집"
   },
   "ParametersInput": {
     "stamina": "체력"
@@ -399,6 +402,7 @@
     "preparing": "인식기 준비 중… (처음 사용 시 몇 MB를 다운로드합니다)",
     "saving": "저장 중…",
     "failed": "가져오기에 실패했습니다. 스크린샷을 확인하고 다시 시도해 주세요.",
+    "unreadable": "읽지 못한 스크린샷: {files}",
     "selectScreenshots": "스크린샷 선택",
     "dropHint": "탭하여 선택하거나 스크린샷을 여기에 드롭하세요"
   },
@@ -414,7 +418,8 @@
     "provideData": "데이터 제공하기",
     "lastUpdated": "최종 업데이트",
     "start": "시작",
-    "restart": "재시작"
+    "restart": "재시작",
+    "simulationFailed": "시뮬레이션 중 오류가 발생했습니다. 다시 실행하거나 편성을 변경해 주세요."
   },
   "StrategyPicker": {
     "auto": "자동",
@@ -480,6 +485,7 @@
     "share": "공유",
     "openLoadouts": "편성",
     "import": "가져오기",
+    "copyFailed": "URL을 복사하지 못했습니다",
     "readLoadoutFromUrl": "URL 로드",
     "invalidUrl": "유효하지 않은 URL입니다.",
     "invalidLoadout": "URL에서 편성을 불러올 수 없습니다.",
@@ -502,7 +508,8 @@
     "more": "더보기",
     "x": "X에 공유",
     "saveImage": "이미지로 저장",
-    "exporting": "저장 중…"
+    "exporting": "저장 중…",
+    "exportFailed": "저장 실패. 다시 시도"
   },
   "ConfirmModal": {
     "cancel": "취소",
@@ -562,7 +569,10 @@
     "allStages": "전체 스테이지",
     "actions": "작업",
     "loadFailed": "저장된 편성을 불러오지 못했습니다.",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "saveFailed": "저장 실패",
+    "renameFailed": "이름 변경 실패",
+    "deleteFailed": "삭제 실패"
   },
   "SimulatorStats": {
     "total": "합계",
@@ -719,7 +729,9 @@
     "needsChecking": "{count}개의 행을 확인해야 합니다",
     "confirmRow": "이 행의 값이 올바른지 확인",
     "selectFiles": "파일 선택",
-    "addRow": "행 추가"
+    "addRow": "행 추가",
+    "clear": "지우기",
+    "confirmClear": "모든 행을 삭제할까요?"
   },
   "RehearsalComparison": {
     "addResults": "리허설 결과 추가",

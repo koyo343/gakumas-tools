@@ -4,7 +4,7 @@ import {
   customizationCandidates,
   inferCustomizations,
   predictBadges,
-} from "../gakumas-tools/utils/inferCustomizations.js";
+} from "../../../../gakumas-tools/utils/inferCustomizations.js";
 
 const SEISHIN_TOUITSU = 752;
 const SONZAIKAN = 117;

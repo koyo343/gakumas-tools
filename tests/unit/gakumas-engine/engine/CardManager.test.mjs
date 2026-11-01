@@ -1,29 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Stages } from "gakumas-data";
-import {
-  IdolConfig,
-  IdolStageConfig,
-  S,
-  StageConfig,
-  StageEngine,
-} from "gakumas-engine";
+import { S } from "gakumas-engine";
+import { createEngine } from "../helpers.mjs";
 
 const TODOITE_PLUS = 153;
 const HEART_NO_AIZU_PLUS = 93;
 const YUMEIRO_LIP_PLUS = 521;
 
-function setup(cardIds) {
-  const idol = new IdolConfig({
-    params: [100, 100, 100, 30],
-    supportBonus: 0,
-    pItemIds: [],
-    skillCardIdGroups: [cardIds],
-    customizationGroups: [cardIds.map(() => ({}))],
-  });
-  const stage = new StageConfig(Stages.getById(1));
-  const engine = new StageEngine(new IdolStageConfig(idol, stage));
-  engine.logger.disable();
+function setup(skillCardIds) {
+  const engine = createEngine({ skillCardIds });
   const state = engine.getInitialState(true);
   const cardOf = (id) => state[S.cardMap].findIndex((c) => c.id === id);
   return { cardManager: engine.cardManager, state, cardOf };

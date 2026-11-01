@@ -4,7 +4,7 @@ import {
   MEMORY_DRAFT_STORAGE_KEY,
   stashMemoryDraft,
   takeMemoryDraft,
-} from "../gakumas-tools/utils/memoryDraft.js";
+} from "../../../../gakumas-tools/utils/memoryDraft.js";
 
 function createMemoryStorage(initial = {}) {
   const values = new Map(Object.entries(initial));

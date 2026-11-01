@@ -15,6 +15,7 @@ import {
   loadSkillCardModel,
 } from "@/utils/imageProcessing/models";
 import { logEvent } from "@/utils/logging";
+import { createOcrPool } from "@/utils/ocrPool";
 import styles from "./MemoryImporterModal.module.scss";
 
 const BUSY_STATUSES = ["preparing", "reading", "saving"];
@@ -25,12 +26,13 @@ function MemoryImporterModal({ onSuccess, multiple = true }) {
   const [status, setStatus] = useState(null);
   const [progress, setProgress] = useState(0);
   const [total, setTotal] = useState(0);
-  const engWorkerRef = useRef(null);
+  const [failedFiles, setFailedFiles] = useState([]);
+  const ocrPoolRef = useRef(null);
   const busy = BUSY_STATUSES.includes(status);
 
   useEffect(
     () => () => {
-      engWorkerRef.current?.then((worker) => worker.terminate());
+      ocrPoolRef.current?.close();
     },
     []
   );
@@ -40,33 +42,47 @@ function MemoryImporterModal({ onSuccess, multiple = true }) {
       if (!files.length) return;
       setTotal(files.length);
       setProgress(0);
+      setFailedFiles([]);
       setStatus("preparing");
 
       try {
-        engWorkerRef.current ??= createWorker("eng", 1);
-        const [engWorker, pItemModel, skillCardModel] = await Promise.all([
-          engWorkerRef.current,
+        const [pItemModel, skillCardModel] = await Promise.all([
           loadPItemModel(),
           loadSkillCardModel(),
         ]);
+        ocrPoolRef.current ??= createOcrPool(() => createWorker("eng", 1));
+        const pool = ocrPoolRef.current;
 
         console.time("All memories parsed");
         setStatus("reading");
-        const results = [];
-        for (const file of files) {
-          results.push(
-            await getMemoryFromFile(
-              file,
-              engWorker,
-              pItemModel.session,
-              pItemModel.classes,
-              skillCardModel.session,
-              skillCardModel.classes
-            )
-          );
-          setProgress((p) => p + 1);
-        }
+        const parsed = await Promise.all(
+          files.map(async (file) => {
+            try {
+              return await pool.run((engWorker) =>
+                getMemoryFromFile(
+                  file,
+                  engWorker,
+                  pItemModel.session,
+                  pItemModel.classes,
+                  skillCardModel.session,
+                  skillCardModel.classes
+                )
+              );
+            } catch (err) {
+              console.error(file.name, err);
+              return null;
+            } finally {
+              setProgress((p) => p + 1);
+            }
+          })
+        );
         console.timeEnd("All memories parsed");
+        const results = parsed.filter(Boolean);
+        const failed = files
+          .filter((_, i) => !parsed[i])
+          .map((file) => file.name);
+        setFailedFiles(failed);
+        if (!results.length) throw new Error("No screenshots could be read");
 
         logEvent("memories.import", {
           num: results.length,
@@ -132,6 +148,11 @@ function MemoryImporterModal({ onSuccess, multiple = true }) {
         </div>
         <div className={c(styles.bar, status && styles.barShown)}>
           <ProgressBar value={progress} max={total} />
+        </div>
+        <div className={styles.failedFiles}>
+          {!busy &&
+            failedFiles.length > 0 &&
+            t("unreadable", { files: failedFiles.join(", ") })}
         </div>
       </div>
     </Modal>
