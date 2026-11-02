@@ -29,13 +29,27 @@ export async function parseCsvFile(file) {
     });
 }
 
+const PREVIEW_MAX_WIDTH = 720;
+
+function downscaleForPreview(canvas) {
+  if (canvas.width <= PREVIEW_MAX_WIDTH) return canvas;
+  const width = PREVIEW_MAX_WIDTH;
+  const height = Math.round((canvas.height * width) / canvas.width);
+  const scaled = canvas.convertToBlob
+    ? new OffscreenCanvas(width, height)
+    : Object.assign(document.createElement("canvas"), { width, height });
+  scaled.getContext("2d").drawImage(canvas, 0, 0, width, height);
+  return scaled;
+}
+
 // Snapshot a canvas (or OffscreenCanvas) to an object URL so the source
 // frame can be shown to the user after the canvas is reused.
 export async function canvasToObjectURL(canvas) {
   try {
-    const blob = canvas.convertToBlob
-      ? await canvas.convertToBlob({ type: "image/jpeg", quality: 0.8 })
-      : await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.8));
+    const preview = downscaleForPreview(canvas);
+    const blob = preview.convertToBlob
+      ? await preview.convertToBlob({ type: "image/jpeg", quality: 0.8 })
+      : await new Promise((res) => preview.toBlob(res, "image/jpeg", 0.8));
     return blob ? URL.createObjectURL(blob) : null;
   } catch {
     return null;

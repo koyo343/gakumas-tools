@@ -63,6 +63,7 @@
   padding: 4px 28px 4px 10px;
   background-position: right 9px center;
   font-size: tokens.$text-sm;
+  @include mixins.no-focus-zoom;
 }
 
 .filterActive {
@@ -356,15 +357,22 @@
   padding: 3px 8px;
   border-radius: tokens.$radius-sm;
   font-size: tokens.$text-sm;
+  @include mixins.no-focus-zoom;
 }
 
-.stageName {
+.stageName,
+.rowError {
   overflow: hidden;
   color: tokens.$surface-ink-muted;
   font-size: tokens.$text-xs;
   font-weight: tokens.$weight-semibold;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.rowError {
+  color: tokens.$danger;
+  @include mixins.pop-in;
 }
 
 .plotCell {

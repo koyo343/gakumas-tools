@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { DEBUG } from "@/utils/imageProcessing/common";
-import { createWorkerPool } from "@/utils/workerPool";
+import { mapWithLimit } from "@/utils/mapWithLimit";
+import { createOcrPool, getOcrPoolSize } from "@/utils/ocrPool";
 import {
   bucketFiles,
   canvasToObjectURL,
@@ -33,19 +34,6 @@ function loadOcrModules() {
 const FRAME_INTERVAL_MS = 200;
 const BRIGHTNESS_THRESHOLD = 180;
 
-// A Tesseract worker's wasm heap grows to ~350 MB on an upscaled phone
-// screenshot and never shrinks, so the pool is sized by memory, not cores.
-function getOcrPoolSize() {
-  const cap = matchMedia("(pointer: coarse)").matches ? 2 : 4;
-  const byMemory = navigator.deviceMemory
-    ? Math.floor(navigator.deviceMemory / 2)
-    : cap;
-  return Math.max(
-    1,
-    Math.min(cap, byMemory, navigator.hardwareConcurrency || 1),
-  );
-}
-
 export default function useRehearsalParser() {
   const t = useTranslations("Rehearsal");
 
@@ -56,36 +44,45 @@ export default function useRehearsalParser() {
   const [icons, setIcons] = useState(null);
   const [liteMode, setLiteMode] = useState(false);
   const ocrPoolRef = useRef(null);
+  const dataRef = useRef(data);
+  const unmountedRef = useRef(false);
+  const batchesRef = useRef(0);
 
   const getOcrPool = useCallback(() => {
-    ocrPoolRef.current ??= createWorkerPool({
-      size: getOcrPoolSize(),
-      create: async () => (await loadOcrModules()).createWorker("eng", 1),
-      destroy: (worker) => worker.terminate(),
-    });
+    ocrPoolRef.current ??= createOcrPool(async () =>
+      (await loadOcrModules()).createWorker("eng", 1),
+    );
     return ocrPoolRef.current;
   }, []);
 
   useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  useEffect(() => {
+    unmountedRef.current = false;
     return () => {
+      unmountedRef.current = true;
       ocrPoolRef.current?.close();
       ocrPoolRef.current = null;
+      revokeRowSources(dataRef.current);
     };
   }, []);
 
   const processVideo = useCallback(
     async (videoFile) => {
       setProcessingStatus(t("analyzingVideo"));
-      // Frames are OCR'd one at a time: seeking dominates runtime, OCR is
-      // fast, and streaming keeps peak memory flat (one canvas instead of N
-      // candidates on mobile).
+      // Frames are OCR'd while scanning continues. Capping the frames in
+      // flight keeps peak memory flat however long the video is.
       const pool = getOcrPool();
-      const results = [];
+      const scan = new AbortController();
+      let found = 0;
       let scanStarted = false;
       let lastStatusAt = 0;
       const { streamCandidateFrames, getScoresFromImage } =
         await loadOcrModules();
-      for await (const canvas of streamCandidateFrames(videoFile, {
+      const frames = streamCandidateFrames(videoFile, {
+        signal: scan.signal,
         intervalMs: FRAME_INTERVAL_MS,
         brightnessThreshold: BRIGHTNESS_THRESHOLD,
         onProgress: (analyzed, frameTotal) => {
@@ -105,23 +102,36 @@ export default function useRehearsalParser() {
             t("scanningVideo", {
               analyzed,
               total: frameTotal,
-              found: results.length,
+              found,
             }),
           );
         },
-      })) {
-        const { scores, flags, icons } = await pool.run((worker) =>
-          getScoresFromImage(canvas, worker),
-        );
-        if (scores && scores.some((stage) => stage.some((v) => v))) {
-          results.push({
-            scores,
-            flags,
-            icons,
-            ...(!liteMode && { src: await canvasToObjectURL(canvas) }),
-          });
-        }
-      }
+      });
+      const scored = await mapWithLimit(
+        frames,
+        getOcrPoolSize() * 2,
+        async (canvas) => {
+          try {
+            const { scores, flags, icons } = await pool.run((worker) =>
+              getScoresFromImage(canvas, worker),
+            );
+            if (!scores?.some((stage) => stage.some((v) => v))) return null;
+            found++;
+            return {
+              scores,
+              flags,
+              icons,
+              ...(!liteMode && { src: await canvasToObjectURL(canvas) }),
+            };
+          } catch (err) {
+            scan.abort(err);
+            throw err;
+          } finally {
+            canvas.width = canvas.height = 0;
+          }
+        },
+      );
+      const results = scored.filter(Boolean);
       setProcessingStatus(t("videoComplete", { count: results.length }));
       return { results, scanStarted };
     },
@@ -163,15 +173,11 @@ export default function useRehearsalParser() {
   const handleFiles = useCallback(
     async (fileList) => {
       const files = Array.from(fileList);
-      setProgress(null);
-      setProcessingStatus("");
       if (!files.length) return;
-      setData((d) => {
-        revokeRowSources(d);
-        return [];
-      });
-      setTotal(files.length);
-      setProgress(0);
+      const joining = batchesRef.current++ > 0;
+      if (!joining) setProcessingStatus("");
+      setTotal((cur) => (joining ? cur + files.length : files.length));
+      setProgress((p) => (joining ? p : 0));
 
       const { csvs, videos, images } = bucketFiles(files);
       if (DEBUG) console.time("All results parsed");
@@ -216,17 +222,35 @@ export default function useRehearsalParser() {
         }
       })();
 
-      await Promise.all([csvPromise, ocrPromise]);
+      try {
+        await Promise.all([csvPromise, ocrPromise]);
+      } finally {
+        batchesRef.current--;
+      }
       if (DEBUG) console.timeEnd("All results parsed");
-      setIcons(results.find((r) => r.icons)?.icons ?? null);
-      setData(results.map(({ icons, ...row }) => row));
+      if (unmountedRef.current) {
+        revokeRowSources(results);
+        return;
+      }
+      const batchIcons = results.find((r) => r.icons)?.icons;
+      if (batchIcons) setIcons(batchIcons);
+      setData((d) => [...d, ...results.map(({ icons, ...row }) => row)]);
     },
     [processVideo, processImages, t],
   );
 
+  const clearData = useCallback(() => {
+    setData((d) => {
+      revokeRowSources(d);
+      return [];
+    });
+    setIcons(null);
+  }, []);
+
   return {
     data,
     setData,
+    clearData,
     icons,
     handleFiles,
     progress,

@@ -1,7 +1,8 @@
 // Run tasks on at most `size` workers. Workers are created only when every
 // existing one is busy, reused while work keeps arriving, and destroyed once
 // the pool has sat idle for `idleMs`. A worker whose task throws is replaced,
-// since it may be left in a broken state.
+// since it may be left in a broken state. Closing lets busy tasks finish and
+// rejects queued and later ones.
 export function createWorkerPool({ size, create, destroy, idleMs = 10000 }) {
   const idle = [];
   const pending = [];
@@ -39,6 +40,7 @@ export function createWorkerPool({ size, create, destroy, idleMs = 10000 }) {
   return {
     run(fn) {
       return new Promise((resolve, reject) => {
+        if (closed) return reject(new Error("Worker pool closed"));
         pending.push({ fn, resolve, reject });
         dispatch();
       });
@@ -47,6 +49,8 @@ export function createWorkerPool({ size, create, destroy, idleMs = 10000 }) {
       closed = true;
       clearTimeout(idleTimer);
       idle.splice(0).forEach(discard);
+      const error = new Error("Worker pool closed");
+      pending.splice(0).forEach(({ reject }) => reject(error));
     },
   };
 }

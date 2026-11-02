@@ -1,5 +1,5 @@
 import { Fragment, memo, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   FaChevronDown,
   FaCheck,
@@ -37,16 +37,21 @@ function CompareRow({
   onSave,
   onRename,
   onDelete,
+  error,
 }) {
   const t = useTranslations("CompareTab");
   const tStage = useTranslations("StageSummary");
+  const locale = useLocale();
 
   const { loadout, derived, stats, name, createdAt } = run;
 
   const [editMode, setEditMode] = useState(null);
   const [draft, setDraft] = useState("");
+  const [editError, setEditError] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const savingRef = useRef(false);
+  const editSessionRef = useRef(0);
   const inputRef = useRef(null);
   const rowRef = useRef(null);
 
@@ -84,28 +89,47 @@ function CompareRow({
 
   function startSave() {
     setDraft(name || derived?.stageName || "");
+    editSessionRef.current++;
+    setEditError(null);
     setEditMode("save");
   }
 
   function startRename() {
     setDraft(name || "");
+    editSessionRef.current++;
+    setEditError(null);
     setEditMode("rename");
   }
 
   function cancelEdit() {
+    editSessionRef.current++;
     setEditMode(null);
     setDraft("");
+    setEditError(null);
   }
 
   async function confirmEdit() {
     const trimmed = draft.trim();
-    const mode = editMode;
-    cancelEdit();
-    if (!trimmed) return;
-    if (mode === "save" && onSave) {
-      await onSave(run, trimmed);
-    } else if (mode === "rename" && onRename) {
-      await onRename(run, trimmed);
+    if (!trimmed) {
+      cancelEdit();
+      return;
+    }
+    if (savingRef.current) return;
+    savingRef.current = true;
+    const session = editSessionRef.current;
+    try {
+      if (editMode === "save" && onSave) {
+        await onSave(run, trimmed);
+      } else if (editMode === "rename" && onRename) {
+        await onRename(run, trimmed);
+      }
+      if (session === editSessionRef.current) cancelEdit();
+    } catch (err) {
+      console.error(err);
+      if (session !== editSessionRef.current) return;
+      setEditError(t(editMode === "save" ? "saveFailed" : "renameFailed"));
+    } finally {
+      savingRef.current = false;
     }
   }
 
@@ -166,7 +190,8 @@ function CompareRow({
     }
   }
 
-  const relative = showTime && !editMode ? formatRelative(createdAt) : null;
+  const relative = showTime && !editMode ? formatRelative(createdAt, locale) : null;
+  const shownError = editError || error;
 
   return (
     <Fragment>
@@ -232,9 +257,15 @@ function CompareRow({
             {name}
           </div>
         ) : null}
-        <div className={styles.stageName}>
-          {formatStageName(stage, tStage)}
-        </div>
+        {shownError ? (
+          <div className={styles.rowError} role="alert">
+            {shownError}
+          </div>
+        ) : (
+          <div className={styles.stageName}>
+            {formatStageName(stage, tStage)}
+          </div>
+        )}
       </div>
 
       <div className={styles.plotCell}>

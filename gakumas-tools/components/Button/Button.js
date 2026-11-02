@@ -13,6 +13,7 @@ function Button({
   size = "md",
   disabled,
   ariaLabel,
+  title,
   fill,
   pill,
   locale,
@@ -45,6 +46,7 @@ function Button({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
+      title={title}
     >
       {children}
     </button>

@@ -73,4 +73,9 @@ export default class BaseStrategy {
   selectRandomInsertIndex(state, cards) {
     throw new Error("selectRandomInsertIndex is not implemented!");
   }
+  
+  pickCardsToGrow(state, cards, num = 1, optional = false) {
+    throw new Error("pickCardsToGrow is not implemented!");
+  }
+
 }

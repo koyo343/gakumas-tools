@@ -60,7 +60,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.diff.outputs.changed == 'true'
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Run detection fixtures

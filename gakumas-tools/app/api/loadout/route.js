@@ -10,6 +10,7 @@ import {
   readJsonBody,
   validateLoadout,
 } from "@/utils/apiValidation";
+import { listLoadouts } from "@/utils/userLists";
 
 const MAX_BODY_BYTES = 100_000;
 
@@ -97,13 +98,7 @@ export async function GET(request) {
   const userId = session.user.id;
 
   const { db } = await connect();
-  const loadouts = await db
-    .collection("loadouts")
-    .find({ userId })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  return Response.json(loadouts);
+  return Response.json(await listLoadouts(db, userId));
 }
 
 export async function PATCH(request) {

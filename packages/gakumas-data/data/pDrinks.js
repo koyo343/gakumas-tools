@@ -1,8 +1,12 @@
 import P_DRINKS from "../csv/p_drinks.csv";
 import { deserializeEffectSequence } from "../utils/effects";
+import { lazyParse } from "../utils/lazyParse";
 
 P_DRINKS.forEach((pDrink) => {
   pDrink._type = "pDrink";
+});
+
+const parsed = lazyParse(P_DRINKS, (pDrink) => {
   pDrink.actions = deserializeEffectSequence(pDrink.actions);
 });
 
@@ -13,11 +17,11 @@ const P_DRINKS_BY_ID = P_DRINKS.reduce((acc, cur) => {
 
 class PDrinks {
   static getAll() {
-    return P_DRINKS;
+    return parsed.all();
   }
 
   static getById(id) {
-    return P_DRINKS_BY_ID[id];
+    return parsed.one(P_DRINKS_BY_ID[id]);
   }
 
   static getFiltered({ rarities, plans, unlockPlvs }) {
@@ -26,7 +30,7 @@ class PDrinks {
       if (plans && !plans.includes(pDrink.plan)) return false;
       if (unlockPlvs && !unlockPlvs.includes(pDrink.unlockPlv)) return false;
       return true;
-    });
+    }).map(parsed.one);
   }
 }
 

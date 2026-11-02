@@ -1,5 +1,5 @@
 "use client";
-import { memo, useContext, useEffect, useMemo } from "react";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { DISCORD_AUTH_ENABLED } from "@/utils/authAvailability";
 import { useTranslations } from "next-intl";
@@ -24,6 +24,7 @@ import styles from "./SimulationRuns.module.scss";
 
 function CompareTab({ currentRun, onAfterLoad }) {
   const t = useTranslations("CompareTab");
+  const tStage = useTranslations("StageSummary");
   const { status } = useSession();
   const { setModal } = useContext(ModalContext);
   const {
@@ -37,7 +38,14 @@ function CompareTab({ currentRun, onAfterLoad }) {
     deleteSaved,
     renameSaved,
     loadRun,
+    requestSaved,
   } = useContext(SimulationRunsContext);
+
+  const [deleteErrors, setDeleteErrors] = useState({});
+
+  useEffect(() => {
+    requestSaved();
+  }, [requestSaved]);
 
   const [subTab, setSubTab] = usePersistedState(
     "gakumas-tools.compare.subTab",
@@ -119,10 +127,10 @@ function CompareTab({ currentRun, onAfterLoad }) {
     for (const r of allPools) {
       const key = stageKeyOf(r);
       if (!key || map.has(key)) continue;
-      map.set(key, stageLabelOf(r) || key);
+      map.set(key, stageLabelOf(r, tStage("custom")) || key);
     }
     return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [allPools]);
+  }, [allPools, tStage]);
 
   const seasonOptions = useMemo(() => {
     const seasons = new Set();
@@ -158,12 +166,12 @@ function CompareTab({ currentRun, onAfterLoad }) {
       promptSignIn();
       return;
     }
-    await saveRun(run, name).catch(console.error);
+    await saveRun(run, name);
   }
 
   async function handleRename(run, name) {
     if (run.name === name) return;
-    await renameSaved(run._id || run.id, name).catch(console.error);
+    await renameSaved(run._id || run.id, name);
   }
 
   function handleLoad(run) {
@@ -187,9 +195,15 @@ function CompareTab({ currentRun, onAfterLoad }) {
   }
 
   function handleDeleteSaved(run) {
-    confirmDelete(() =>
-      deleteSaved([run._id || run.id]).catch(console.error),
-    );
+    confirmDelete(async () => {
+      setDeleteErrors(({ [run.id]: _, ...rest }) => rest);
+      try {
+        await deleteSaved([run._id || run.id]);
+      } catch (err) {
+        console.error(err);
+        setDeleteErrors((cur) => ({ ...cur, [run.id]: t("deleteFailed") }));
+      }
+    });
   }
 
   const filterCls = (v) => c(styles.filter, v !== "all" && styles.filterActive);
@@ -332,6 +346,7 @@ function CompareTab({ currentRun, onAfterLoad }) {
               xMax={range.max}
               ticks={ticks}
               showTime={subTab === "history"}
+              error={subTab === "saved" ? deleteErrors[run.id] : undefined}
               onLoad={handleLoad}
               onSave={subTab === "history" ? handleSave : undefined}
               onRename={subTab === "saved" ? handleRename : undefined}

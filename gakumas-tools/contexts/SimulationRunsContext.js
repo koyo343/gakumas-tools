@@ -34,6 +34,9 @@ export function SimulationRunsContextProvider({ children }) {
   const [savedRuns, setSavedRuns] = useState([]);
   const [savedLoading, setSavedLoading] = useState(true);
   const [savedError, setSavedError] = useState(false);
+  const [savedWanted, setSavedWanted] = useState(false);
+  const savedRunsRef = useRef(savedRuns);
+  savedRunsRef.current = savedRuns;
   const didInitRef = useRef(false);
 
   useEffect(() => {
@@ -98,14 +101,16 @@ export function SimulationRunsContextProvider({ children }) {
     [fetchSaved],
   );
 
+  const requestSaved = useCallback(() => setSavedWanted(true), []);
+
   useEffect(() => {
     if (status === "authenticated") {
-      fetchSaved();
+      if (savedWanted) fetchSaved();
     } else if (status === "unauthenticated") {
       setSavedRuns([]);
       setSavedLoading(false);
     }
-  }, [status, fetchSaved]);
+  }, [status, savedWanted, fetchSaved]);
 
   const pushRun = useCallback(({ loadout, loadouts, scores }) => {
     const base = extractLoadoutFields(loadout);
@@ -155,23 +160,43 @@ export function SimulationRunsContextProvider({ children }) {
     [mutateSaved],
   );
 
-  const deleteSaved = useCallback(
-    async (ids) => {
-      const idSet = new Set(ids);
-      setSavedRuns((cur) => cur.filter((r) => !idSet.has(r._id || r.id)));
-      await mutateSaved("DELETE", { ids });
+  const mutateSavedOptimistically = useCallback(
+    async (update, method, body) => {
+      const previousRuns = savedRunsRef.current;
+      const optimisticRuns = update(previousRuns);
+      setSavedRuns(optimisticRuns);
+      try {
+        await mutateSaved(method, body);
+      } catch (err) {
+        setSavedRuns((cur) => (cur === optimisticRuns ? previousRuns : cur));
+        throw err;
+      }
     },
     [mutateSaved],
   );
 
+  const deleteSaved = useCallback(
+    async (ids) => {
+      const idSet = new Set(ids);
+      await mutateSavedOptimistically(
+        (runs) => runs.filter((r) => !idSet.has(r._id || r.id)),
+        "DELETE",
+        { ids },
+      );
+    },
+    [mutateSavedOptimistically],
+  );
+
   const renameSaved = useCallback(
     async (id, name) => {
-      setSavedRuns((cur) =>
-        cur.map((r) => ((r._id || r.id) === id ? { ...r, name } : r)),
+      await mutateSavedOptimistically(
+        (runs) =>
+          runs.map((r) => ((r._id || r.id) === id ? { ...r, name } : r)),
+        "PATCH",
+        { id, name },
       );
-      await mutateSaved("PATCH", { id, name });
     },
-    [mutateSaved],
+    [mutateSavedOptimistically],
   );
 
   const loadRun = useCallback(
@@ -197,6 +222,7 @@ export function SimulationRunsContextProvider({ children }) {
       deleteSaved,
       renameSaved,
       loadRun,
+      requestSaved,
       refetchSaved: fetchSaved,
     }),
     [
@@ -211,6 +237,7 @@ export function SimulationRunsContextProvider({ children }) {
       deleteSaved,
       renameSaved,
       loadRun,
+      requestSaved,
       fetchSaved,
     ],
   );

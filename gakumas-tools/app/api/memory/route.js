@@ -6,6 +6,7 @@ import {
   cleanMemories,
   readJsonBody,
 } from "@/utils/apiValidation";
+import { listMemories } from "@/utils/userLists";
 
 const MAX_BODY_BYTES = 2_000_000;
 
@@ -17,10 +18,7 @@ export async function GET() {
   const userId = session.user.id;
 
   const { db } = await connect();
-  const memories =
-    (await db.collection("memories").find({ userId }).toArray()) || [];
-
-  return Response.json({ memories });
+  return Response.json({ memories: await listMemories(db, userId) });
 }
 
 export async function POST(request) {

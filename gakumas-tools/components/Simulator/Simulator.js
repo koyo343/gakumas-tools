@@ -70,6 +70,7 @@ export default function Simulator() {
   const [strategy, setStrategy] = useState("HeuristicStrategy");
   const [simulatorData, setSimulatorData] = useState(null);
   const [running, setRunning] = useState(false);
+  const [simError, setSimError] = useState(null);
   const [numRuns, setNumRuns] = usePersistedState(
     NUM_RUNS_KEY,
     DEFAULT_NUM_RUNS,
@@ -156,8 +157,15 @@ export default function Simulator() {
     [setSimulatorData, setRunning, pushRun, loadout, loadouts, stage],
   );
 
+  function failSimulation(err) {
+    console.error(err);
+    setSimulatorData(null);
+    setSimError(t("simulationFailed"));
+  }
+
   async function startManualPlay() {
     setRunning(true);
+    setSimError(null);
     setSimulatorData(null);
     setPendingDecision(null);
 
@@ -167,26 +175,32 @@ export default function Simulator() {
       scores: null,
     });
 
-    const engine = new StageEngine(config, linkConfigs);
+    try {
+      const engine = new StageEngine(config, linkConfigs);
 
-    const wrappedInputCallback = async (decision) => {
-      const currentLogs = engine.logger.getLogs(decision.state);
-      currentLogs[currentLogs.length - 1] = {
-        ...currentLogs[currentLogs.length - 1],
-        isPending: true,
+      const wrappedInputCallback = async (decision) => {
+        const currentLogs = engine.logger.getLogs(decision.state);
+        currentLogs[currentLogs.length - 1] = {
+          ...currentLogs[currentLogs.length - 1],
+          isPending: true,
+        };
+        setSimulatorData({ logs: currentLogs });
+        return await manualInputCallback(decision);
       };
-      setSimulatorData({ logs: currentLogs });
-      return await manualInputCallback(decision);
-    };
 
-    const ManualStrategy = STRATEGIES["ManualStrategy"];
-    const strategy = new ManualStrategy(engine, wrappedInputCallback);
-    engine.strategy = strategy;
+      const ManualStrategy = STRATEGIES["ManualStrategy"];
+      const strategy = new ManualStrategy(engine, wrappedInputCallback);
+      engine.strategy = strategy;
 
-    const player = new StagePlayer(engine, strategy);
-    const result = await player.play();
-    setSimulatorData({ logs: result.logs });
-    setRunning(false);
+      const player = new StagePlayer(engine, strategy);
+      const result = await player.play();
+      setSimulatorData({ logs: result.logs });
+    } catch (err) {
+      setPendingDecision(null);
+      failSimulation(err);
+    } finally {
+      setRunning(false);
+    }
   }
 
   const startSimulation = useCallback(() => runSimulationRef.current(), []);
@@ -195,6 +209,7 @@ export default function Simulator() {
     const controller = new AbortController();
     abortRef.current = controller;
     setRunning(true);
+    setSimError(null);
     progress.set(0);
 
     console.time("simulation");
@@ -226,7 +241,7 @@ export default function Simulator() {
     } catch (err) {
       console.timeEnd("simulation");
       if (controller.signal.aborted) return;
-      console.error(err);
+      failSimulation(err);
       setRunning(false);
     }
   }
@@ -328,6 +343,7 @@ export default function Simulator() {
               setStrategy={(value) => {
                 abortRef.current?.abort();
                 setSimulatorData(null);
+                setSimError(null);
                 setPendingDecision(null);
                 setStrategy(value);
                 setRunning(false);
@@ -377,7 +393,7 @@ export default function Simulator() {
             href="https://github.com/gakumas-tools/gakumas-tools/blob/master/gakumas-tools/simulator/CHANGELOG.md"
             target="_blank"
           >
-            2026-10-25
+            2026-10-31
           </a>
         </div>
       </div>
@@ -404,7 +420,14 @@ export default function Simulator() {
         />
       )}
 
-      {!simulatorData && <div className={styles.resultPlaceholder} />}
+      {!simulatorData &&
+        (simError ? (
+          <Alert variant="danger" className={styles.resultError}>
+            {simError}
+          </Alert>
+        ) : (
+          <div className={styles.resultPlaceholder} />
+        ))}
     </div>
   );
 }

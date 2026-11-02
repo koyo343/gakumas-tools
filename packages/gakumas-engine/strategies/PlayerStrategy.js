@@ -75,5 +75,10 @@ export default class PlayerStrategy {
     } else {
       throw new PositionSelectionRequest("INSERT_POSITION_SELECTION", state, cards, reverse);
     }
-  }  
+  }
+
+  pickCardsToGrow(state, cards, num = 1, optional = false) {
+    return this.pickCardsInternal("GROW_SELECTION", state, cards, num, optional);
+  }
+
 }

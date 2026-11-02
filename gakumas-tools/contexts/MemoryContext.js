@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import DataContext from "@/contexts/DataContext";
@@ -15,6 +16,8 @@ const MemoryContext = createContext();
 
 export function MemoryContextProvider({ children }) {
   const [saveState, setSaveState] = useState("unsaved");
+  const [dirty, setDirty] = useState(false);
+  const revisionRef = useRef(0);
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
   const [pIdolId, setPIdolId] = useState(null);
@@ -29,7 +32,7 @@ export function MemoryContextProvider({ children }) {
     {},
     {},
   ]);
-  const { fetchMemories } = useContext(DataContext);
+  const { putMemories } = useContext(DataContext);
 
   useEffect(() => {
     // If fewer than 4 pItems, pad with 0s
@@ -44,6 +47,7 @@ export function MemoryContextProvider({ children }) {
 
   const save = useCallback(
     async (asNew) => {
+      const savedRevision = revisionRef.current;
       setSaveState("saving");
       const memory = {
         name,
@@ -66,17 +70,15 @@ export function MemoryContextProvider({ children }) {
         if (!response.ok) {
           throw new Error(`${method} ${url} failed with ${response.status}`);
         }
-        if (isNew) {
-          const { ids } = await response.json();
-          setId(ids[0]);
-        }
+        const savedId = isNew ? (await response.json()).ids[0] : id;
+        setId(savedId);
         setSaveState("saved");
+        if (revisionRef.current == savedRevision) setDirty(false);
+        putMemories([{ ...memory, _id: savedId }]);
       } catch (error) {
         console.error(error);
         setSaveState("error");
-        return;
       }
-      fetchMemories();
     },
     [
       id,
@@ -86,7 +88,7 @@ export function MemoryContextProvider({ children }) {
       pItemIds,
       skillCardIds,
       customizations,
-      fetchMemories,
+      putMemories,
     ]
   );
 
@@ -102,6 +104,8 @@ export function MemoryContextProvider({ children }) {
     } else {
       setCustomizations([{}, {}, {}, {}, {}, {}]);
     }
+    revisionRef.current++;
+    setDirty(false);
   }, []);
 
   const stashDraft = useCallback(() => {
@@ -120,6 +124,7 @@ export function MemoryContextProvider({ children }) {
     const draft = takeMemoryDraft();
     if (!draft) return false;
     setAll(draft);
+    setDirty(true);
     return true;
   }, [setAll]);
 
@@ -127,7 +132,28 @@ export function MemoryContextProvider({ children }) {
     takeMemoryDraft();
   }, []);
 
+  const markDirty = useCallback(() => {
+    revisionRef.current++;
+    setDirty(true);
+  }, []);
+
+  const editName = useCallback((value) => {
+    setName(value);
+    markDirty();
+  }, []);
+
+  const editPIdolId = useCallback((value) => {
+    setPIdolId(value);
+    markDirty();
+  }, []);
+
+  const editParams = useCallback((value) => {
+    setParams(value);
+    markDirty();
+  }, []);
+
   const replacePItemId = useCallback((index, itemId) => {
+    markDirty();
     setPItemIds((cur) => {
       const next = [...cur];
       next[index] = itemId;
@@ -136,6 +162,7 @@ export function MemoryContextProvider({ children }) {
   }, []);
 
   const replaceSkillCardId = useCallback((index, cardId) => {
+    markDirty();
     setSkillCardIds((cur) => {
       const next = [...cur];
       next[index] = cardId;
@@ -144,6 +171,7 @@ export function MemoryContextProvider({ children }) {
   }, []);
 
   const replaceCustomizations = useCallback((index, c11n) => {
+    markDirty();
     setCustomizations((cur) => {
       const next = [...cur];
       next[index] = c11n;
@@ -154,13 +182,14 @@ export function MemoryContextProvider({ children }) {
   const value = useMemo(
     () => ({
       saveState,
+      dirty,
       id,
       name,
-      setName,
+      setName: editName,
       pIdolId,
-      setPIdolId,
+      setPIdolId: editPIdolId,
       params,
-      setParams,
+      setParams: editParams,
       pItemIds,
       skillCardIds,
       customizations,
@@ -175,8 +204,12 @@ export function MemoryContextProvider({ children }) {
     }),
     [
       saveState,
+      dirty,
       id,
       name,
+      editName,
+      editPIdolId,
+      editParams,
       pIdolId,
       params,
       pItemIds,

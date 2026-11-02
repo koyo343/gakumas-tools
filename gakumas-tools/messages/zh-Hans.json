@@ -319,7 +319,10 @@
     "parameters": "参数",
     "pItems": "P道具",
     "skillCards": "技能卡",
-    "customizations": "定制"
+    "customizations": "定制",
+    "confirmDiscard": "要放弃未保存的更改吗？",
+    "discard": "放弃",
+    "keepEditing": "继续编辑"
   },
   "ParametersInput": {
     "stamina": "体力"
@@ -399,6 +402,7 @@
     "preparing": "正在准备识别…（首次使用需下载数MB）",
     "saving": "保存中…",
     "failed": "导入失败，请检查截图后重试。",
+    "unreadable": "无法读取的截图：{files}",
     "selectScreenshots": "选择截图",
     "dropHint": "点击选择，或将截图拖放到此处"
   },
@@ -414,7 +418,8 @@
     "provideData": "提供数据",
     "lastUpdated": "最后更新于",
     "start": "开始",
-    "restart": "重新开始"
+    "restart": "重新开始",
+    "simulationFailed": "模拟过程中出错。请重试或修改编组。"
   },
   "StrategyPicker": {
     "auto": "自动",
@@ -481,6 +486,7 @@
     "share": "分享",
     "openLoadouts": "编组",
     "import": "导入",
+    "copyFailed": "无法复制 URL",
     "readLoadoutFromUrl": "URL 读取",
     "invalidUrl": "无效的 URL。",
     "invalidLoadout": "无法从 URL 读取配置。",
@@ -503,7 +509,8 @@
     "more": "更多…",
     "x": "分享到 X",
     "saveImage": "保存为图片",
-    "exporting": "保存中…"
+    "exporting": "保存中…",
+    "exportFailed": "保存失败，请重试"
   },
   "ConfirmModal": {
     "cancel": "取消",
@@ -563,7 +570,10 @@
     "allStages": "全部舞台",
     "actions": "操作",
     "loadFailed": "无法加载已保存的编组。",
-    "retry": "重试"
+    "retry": "重试",
+    "saveFailed": "保存失败",
+    "renameFailed": "重命名失败",
+    "deleteFailed": "删除失败"
   },
   "SimulatorStats": {
     "total": "合计",
@@ -691,6 +701,7 @@
     "selectCardsToUseFree": "选择 {num} 张卡片",
     "selectCardsToUse": "选择 {num} 张卡片",
     "selectCardsToCopy": "选择 {num} 张卡片",
+    "selectCardsToGrow": "选择 {num} 张卡片进行成长",
     "selectRandomCards": "选择 {num} 张卡片",
     "selectPositionToInsertCard": "选择插入卡片的位置",
     "confirm": "确认"
@@ -719,7 +730,9 @@
     "needsChecking": "{count} 行需要检查",
     "confirmRow": "确认此行的数值正确",
     "selectFiles": "选择文件",
-    "addRow": "添加行"
+    "addRow": "添加行",
+    "clear": "清除",
+    "confirmClear": "确定要删除所有行吗？"
   },
   "RehearsalComparison": {
     "addResults": "添加排练结果",

@@ -319,7 +319,10 @@
     "parameters": "Parameters",
     "pItems": "P-items",
     "skillCards": "Skill cards",
-    "customizations": "Customizations"
+    "customizations": "Customizations",
+    "confirmDiscard": "Discard unsaved changes?",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
   },
   "ParametersInput": {
     "stamina": "Stamina"
@@ -399,6 +402,7 @@
     "preparing": "Preparing the reader… (first use downloads a few MB)",
     "saving": "Saving…",
     "failed": "Import failed. Check the screenshots and try again.",
+    "unreadable": "Couldn't read: {files}",
     "selectScreenshots": "Select screenshots",
     "dropHint": "Tap to select, or drop screenshots here"
   },
@@ -414,7 +418,8 @@
     "provideData": "Provide data",
     "lastUpdated": "Last updated",
     "start": "Start",
-    "restart": "Restart"
+    "restart": "Restart",
+    "simulationFailed": "The simulation stopped with an error. Try again, or change the loadout."
   },
   "StrategyPicker": {
     "auto": "Auto",
@@ -481,6 +486,7 @@
     "share": "Share",
     "openLoadouts": "Loadouts",
     "import": "Import",
+    "copyFailed": "Couldn't copy the URL",
     "readLoadoutFromUrl": "Read URL",
     "invalidUrl": "Invalid URL.",
     "invalidLoadout": "Cannot load loadout from URL.",
@@ -503,7 +509,8 @@
     "more": "More…",
     "x": "Share on X",
     "saveImage": "Save as image",
-    "exporting": "Saving…"
+    "exporting": "Saving…",
+    "exportFailed": "Couldn't save. Try again"
   },
   "ConfirmModal": {
     "cancel": "Cancel",
@@ -563,7 +570,10 @@
     "allStages": "All stages",
     "actions": "Actions",
     "loadFailed": "Couldn't load your saved loadouts.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "saveFailed": "Save failed",
+    "renameFailed": "Rename failed",
+    "deleteFailed": "Delete failed"
   },
   "SimulatorStats": {
     "total": "Total",
@@ -691,6 +701,7 @@
     "selectCardsToUseFree": "Select {num} {num, plural, =1 {card} other {cards}} to use free",
     "selectCardsToUse": "Select {num} {num, plural, =1 {card} other {cards}} to use",
     "selectCardsToCopy": "Select {num} {num, plural, =1 {card} other {cards}} to copy",
+    "selectCardsToGrow": "Select {num} {num, plural, =1 {card} other {cards}} to grow",
     "selectRandomCards": "Select {num} {num, plural, =1 {card} other {cards}}",
     "selectPositionToInsertCard": "Select position to insert card",
     "confirm": "Confirm"
@@ -719,7 +730,9 @@
     "needsChecking": "{count} row(s) need checking",
     "confirmRow": "Confirm this row's values are correct",
     "selectFiles": "Select files",
-    "addRow": "Add row"
+    "addRow": "Add row",
+    "clear": "Clear",
+    "confirmClear": "Clear all rows?"
   },
   "RehearsalComparison": {
     "addResults": "Add rehearsal results",

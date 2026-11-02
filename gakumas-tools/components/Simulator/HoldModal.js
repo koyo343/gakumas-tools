@@ -40,6 +40,7 @@ export default function HoldModal({ decision, onDecision, idolId }) {
       USE_CARD_SELECTION: "selectCardsToUse",
       COPY_SELECTION: "selectCardsToCopy",
       RANDOM_SELECTION: "selectRandomCards",
+      GROW_SELECTION: "selectCardsToGrow",
     }[decision.type] ?? "selectCardsToMoveToHand";
 
   const toggleCard = (arrayIndex) => {
