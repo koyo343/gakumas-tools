@@ -8,6 +8,7 @@ const DEFAULTS = {
   maxDepth: 6,
   maxSearchNodes: 1200,
   targetScore: null,
+  deckOrder: "unknown",
 };
 
 const MAXIMUMS = {
@@ -15,6 +16,16 @@ const MAXIMUMS = {
   samples: 32,
   maxDepth: 20,
   maxSearchNodes: 10000,
+};
+
+const DECK_ORDERS = ["unknown", "known"];
+const PLANNING_PILES = {
+  handCards: S.handCards,
+  deckCards: S.deckCards,
+  discardedCards: S.discardedCards,
+  removedCards: S.removedCards,
+  heldCards: S.heldCards,
+  pDrinks: S.pDrinks,
 };
 
 const KEY_FIELDS = [
@@ -142,7 +153,30 @@ export default class ProbabilisticBeamStrategy extends HeuristicStrategy {
     ) {
       throw new Error("Probabilistic beam option \"targetScore\" must be a non-negative number");
     }
+    if (!DECK_ORDERS.includes(this.options.deckOrder)) {
+      throw new Error(
+        `Probabilistic beam option "deckOrder" must be one of: ${DECK_ORDERS.join(", ")}`,
+      );
+    }
     this.lastRecommendation = null;
+  }
+
+  /**
+   * Create an isolated planning state from the current engine state.
+   *
+   * The UI can use this when it starts accepting manually entered piles.
+   * Card values must be the same card ids used by the engine state.
+   */
+  createPlanningState(state, piles = {}) {
+    const planningState = deepCopy(state);
+    for (const [pileName, field] of Object.entries(PLANNING_PILES)) {
+      if (piles[pileName] === undefined) continue;
+      if (!Array.isArray(piles[pileName])) {
+        throw new Error(`Planning pile "${pileName}" must be an array`);
+      }
+      planningState[field] = deepCopy(piles[pileName]);
+    }
+    return planningState;
   }
 
   getActions(state) {
@@ -265,7 +299,9 @@ export default class ProbabilisticBeamStrategy extends HeuristicStrategy {
 
   sampleInitialState(state) {
     const sampled = deepCopy(state);
-    sampled[S.deckCards] = shuffleCopy(sampled[S.deckCards]);
+    if (this.options.deckOrder === "unknown") {
+      sampled[S.deckCards] = shuffleCopy(sampled[S.deckCards]);
+    }
     return sampled;
   }
 
