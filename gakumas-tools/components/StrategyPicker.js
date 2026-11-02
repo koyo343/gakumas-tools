@@ -6,6 +6,7 @@ export default function StrategyPicker({ strategy, setStrategy }) {
 
   const STRATEGY_OPTIONS = [
     { value: "HeuristicStrategy", label: t("auto") },
+    { value: "ProbabilisticBeamStrategy", label: t("beam") },
     { value: "ManualStrategy", label: t("manual") },
   ];
 

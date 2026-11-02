@@ -418,6 +418,7 @@
   },
   "StrategyPicker": {
     "auto": "자동",
+    "beam": "확률 탐색",
     "manual": "수동"
   },
   "StageSelect": {

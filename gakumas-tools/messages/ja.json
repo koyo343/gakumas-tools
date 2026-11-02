@@ -426,6 +426,7 @@
   },
   "StrategyPicker": {
     "auto": "自動",
+    "beam": "確率探索",
     "manual": "手動"
   },
   "StageSelect": {

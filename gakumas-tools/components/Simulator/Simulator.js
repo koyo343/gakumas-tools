@@ -89,6 +89,8 @@ export default function Simulator() {
   const [progress] = useState(createProgressStore);
   const abortRef = useRef(null);
   const runSimulationRef = useRef(null);
+  const simulationNumRuns =
+    strategy === "ProbabilisticBeamStrategy" ? Math.min(numRuns, 20) : numRuns;
 
   const config = useMemo(() => {
     const idolConfig = new IdolConfig(loadout);
@@ -204,7 +206,7 @@ export default function Simulator() {
           config,
           linkConfigs,
           strategy,
-          numRuns,
+          simulationNumRuns,
           (completed) => progress.set(completed),
         );
       } else {
@@ -213,7 +215,7 @@ export default function Simulator() {
             idolStageConfig: config,
             linkConfigs,
             strategyName: strategy,
-            numRuns,
+            numRuns: simulationNumRuns,
           },
           (delta) => progress.set((p) => p + delta),
           controller.signal,
@@ -332,7 +334,8 @@ export default function Simulator() {
               }}
             />
           </div>
-          {strategy === "HeuristicStrategy" && (
+          {(strategy === "HeuristicStrategy" ||
+            strategy === "ProbabilisticBeamStrategy") && (
             <div className={styles.numRunsRow}>
               <label>{t("numRuns")}</label>
               <span>{numRuns}</span>
@@ -351,10 +354,11 @@ export default function Simulator() {
         </div>
 
         <div data-export-hide="true">
-          {strategy === "HeuristicStrategy" && (
+          {(strategy === "HeuristicStrategy" ||
+            strategy === "ProbabilisticBeamStrategy") && (
             <SimulateButton
               running={running}
-              numRuns={numRuns}
+              numRuns={simulationNumRuns}
               progress={progress}
               onRun={startSimulation}
             />
@@ -387,7 +391,8 @@ export default function Simulator() {
         />
       )}
 
-      {strategy === "HeuristicStrategy" && simulatorData && (
+      {(strategy === "HeuristicStrategy" ||
+        strategy === "ProbabilisticBeamStrategy") && simulatorData && (
         <SimulatorResult
           pending={running}
           data={simulatorData}

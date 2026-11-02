@@ -418,6 +418,7 @@
   },
   "StrategyPicker": {
     "auto": "自动",
+    "beam": "概率搜索",
     "manual": "手动"
   },
   "StageSelect": {
