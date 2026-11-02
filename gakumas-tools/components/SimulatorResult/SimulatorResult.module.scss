@@ -1,6 +1,6 @@
-@use "../../styles/colors";
 @use "../../styles/mixins";
 @use "../../styles/tokens";
+@use "../../styles/colors";
 
 .result {
   flex: 1;
@@ -29,6 +29,37 @@
 
 .contents {
   display: contents;
+}
+
+.scoreTiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: tokens.$space-2;
+}
+
+.scoreTile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: tokens.$space-2;
+  text-align: center;
+  background: tokens.$fill-muted;
+  border-radius: 12px;
+  color: tokens.$surface-ink-muted;
+
+  strong {
+    @include mixins.numeric;
+    color: tokens.$surface-ink;
+    font-size: tokens.$text-lg;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 4px;
+
+    strong {
+      font-size: tokens.$text-base;
+    }
+  }
 }
 
 .details {

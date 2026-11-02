@@ -13,10 +13,8 @@ import { DataContextProvider } from "@/contexts/DataContext";
 import { LoadoutContextProvider } from "@/contexts/LoadoutContext";
 import { LoadoutUrlContextProvider } from "@/contexts/LoadoutUrlContext";
 import { SimulationRunsContextProvider } from "@/contexts/SimulationRunsContext";
-import { MemoryCalculatorContextProvider } from "@/contexts/MemoryCalculatorContext";
 import { MemoryContextProvider } from "@/contexts/MemoryContext";
 import { ModalContextProvider } from "@/contexts/ModalContext";
-import { ParameterEstimatorContextProvider } from "@/contexts/ParameterEstimatorContext";
 import { SearchContextProvider } from "@/contexts/SearchContext";
 import { SessionContextProvider } from "@/contexts/SessionContext";
 import { WorkspaceContextProvider } from "@/contexts/WorkspaceContext";
@@ -72,10 +70,8 @@ export default async function RootLayout({ params, children }) {
             <WorkspaceContextProvider initialWorkspace={initialWorkspace}>
               <Navbar oshi={oshi} />
               <DataContextProvider>
-                <MemoryCalculatorContextProvider>
-                  <MemoryContextProvider>
-                    <ParameterEstimatorContextProvider>
-                      <SearchContextProvider>
+                <MemoryContextProvider>
+                    <SearchContextProvider>
                         <LoadoutUrlContextProvider>
                           <LoadoutContextProvider>
                             <SimulationRunsContextProvider>
@@ -95,9 +91,7 @@ export default async function RootLayout({ params, children }) {
                           </LoadoutContextProvider>
                         </LoadoutUrlContextProvider>
                       </SearchContextProvider>
-                    </ParameterEstimatorContextProvider>
-                  </MemoryContextProvider>
-                </MemoryCalculatorContextProvider>
+                </MemoryContextProvider>
               </DataContextProvider>
             </WorkspaceContextProvider>
           </NextIntlClientProvider>

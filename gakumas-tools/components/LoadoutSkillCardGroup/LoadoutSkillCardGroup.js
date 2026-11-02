@@ -9,7 +9,6 @@ import {
   FaEllipsis,
   FaFilm,
   FaImage,
-  FaPercent,
   FaPlus,
   FaXmark,
   FaSort,
@@ -24,9 +23,7 @@ import { compareMemorySkillCards } from "@/utils/sort";
 import ModalLoading from "@/components/Modal/ModalLoading";
 import StageSkillCards from "@/components/StageSkillCards";
 import LoadoutContext from "@/contexts/LoadoutContext";
-import MemoryCalculatorContext from "@/contexts/MemoryCalculatorContext";
 import ModalContext from "@/contexts/ModalContext";
-import { useRouter } from "@/i18n/routing";
 import c from "@/utils/classNames";
 import styles from "./LoadoutSkillCardGroup.module.scss";
 
@@ -48,7 +45,6 @@ function LoadoutSkillCardGroup({
 }) {
   const t = useTranslations("LoadoutSkillCardGroup");
   const { status } = useSession();
-  const router = useRouter();
   const {
     stage,
     setMemory,
@@ -58,9 +54,6 @@ function LoadoutSkillCardGroup({
     setSkillCardIdGroups,
     setCustomizationGroups,
   } = useContext(LoadoutContext);
-  const { setTargetSkillCardIds, setAcquiredSkillCardIds } = useContext(
-    MemoryCalculatorContext,
-  );
   const { setModal, closeModal } = useContext(ModalContext);
   const [expanded, setExpanded] = useState(false);
   const [costExpanded, setCostExpanded] = useState(false);
@@ -137,21 +130,6 @@ function LoadoutSkillCardGroup({
           );
           return newGroups;
         });
-      },
-    },
-    {
-      key: "memoryCalculator",
-      icon: FaPercent,
-      onClick: () => {
-        const nonPidolSkillCardIds = skillCardIds.filter(
-          (id) => !!id && SkillCards.getById(id).sourceType != "pIdol" &&
-                  !["N", "T", "L"].includes(SkillCards.getById(id).rarity)
-        );
-        if (!isExam) {
-          setTargetSkillCardIds(() => nonPidolSkillCardIds);
-        }
-        setAcquiredSkillCardIds(() => nonPidolSkillCardIds);
-        router.push("/memory-calculator");
       },
     },
     !isExam && [

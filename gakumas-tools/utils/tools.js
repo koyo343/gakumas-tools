@@ -4,20 +4,13 @@ import {
   FaChartSimple,
   FaFilm,
   FaGamepad,
-  FaPercent,
   FaTrophy,
 } from "react-icons/fa6";
-import { GrOptimize } from "react-icons/gr";
 
 export const TOOLS = {
   produceRankCalculator: {
     icon: <FaCalculator />,
     path: "/calculator",
-    pinnable: true,
-  },
-  memoryCalculator: {
-    icon: <FaPercent />,
-    path: "/memory-calculator",
     pinnable: true,
   },
   dex: {
@@ -43,11 +36,6 @@ export const TOOLS = {
   rehearsal: {
     icon: <FaChartSimple />,
     path: "/rehearsal",
-    pinnable: true,
-  },
-  estimator: {
-    icon: <GrOptimize />,
-    path: "/estimator",
     pinnable: true,
   },
 };

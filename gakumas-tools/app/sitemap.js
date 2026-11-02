@@ -7,7 +7,6 @@ const PATHS = [
   "/calculator/hajime/lesson",
   "/calculator/nia",
   "/calculator/hif",
-  "/memory-calculator",
   "/dex",
   "/dex/reference/skill-cards",
   "/dex/reference/p-items",
@@ -21,7 +20,6 @@ const PATHS = [
   "/simulator",
   "/contest-player",
   "/rehearsal",
-  "/estimator",
 ];
 
 export default function sitemap() {

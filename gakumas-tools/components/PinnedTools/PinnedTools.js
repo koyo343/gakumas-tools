@@ -31,10 +31,6 @@ const TOOL_COMPONENTS = {
     ssr: false,
     loading: ToolLoading,
   }),
-  memoryCalculator: dynamic(() => import("@/components/MemoryCalculator"), {
-    ssr: false,
-    loading: ToolLoading,
-  }),
   memories: dynamic(() => import("@/components/Memories"), {
     ssr: false,
     loading: ToolLoading,
@@ -52,10 +48,6 @@ const TOOL_COMPONENTS = {
     loading: ToolLoading,
   }),
   contestPlayer: dynamic(() => import("@/components/ContestPlayer/ContestPlayer"), {
-    ssr: false,
-    loading: ToolLoading,
-  }),
-  estimator: dynamic(() => import("@/components/ParameterEstimator"), {
     ssr: false,
     loading: ToolLoading,
   }),

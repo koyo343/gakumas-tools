@@ -23,7 +23,6 @@ import Alert from "@/components/Alert";
 import Button from "@/components/Button";
 import ButtonGroup from "@/components/ButtonGroup";
 import Input from "@/components/Input";
-import KofiAd from "@/components/KofiAd";
 import LoadoutEditor from "@/components/LoadoutEditor";
 import LoadoutSummary from "@/components/LoadoutHistory/LoadoutSummary";
 import SimulatorResult from "@/components/SimulatorResult";
@@ -41,16 +40,22 @@ import {
 } from "@/simulator/workerPool";
 import c from "@/utils/classNames";
 import { createProgressStore } from "@/utils/progressStore";
-import { bucketScores, getMedianScore, mergeResults } from "@/utils/simulator";
+import { mergeResults } from "@/utils/simulator";
 import usePersistedState from "@/utils/usePersistedState";
 import ManualPlay from "./ManualPlay";
 import SimulateButton from "./SimulateButton";
 import SimulatorButtons from "./SimulatorButtons";
-import SimulatorSubTools from "./SimulatorSubTools";
 import styles from "./Simulator.module.scss";
 
 const LINK_PHASES = ["OP", "MID", "ED"];
 const NUM_RUNS_KEY = "gakumas-tools.simulator.numRuns";
+const DISABLED_LISTENERS = {
+  enableUseStats: false,
+  enableConditionalUseStats: false,
+  enablePriorityStats: false,
+  enableScoreStats: false,
+  enableSelectRandomCards: false,
+};
 
 export default function Simulator() {
   const t = useTranslations("Simulator");
@@ -58,7 +63,6 @@ export default function Simulator() {
   const {
     stage,
     loadout,
-    simulatorUrl,
     setSupportBonus,
     loadouts,
     setLoadout,
@@ -66,7 +70,7 @@ export default function Simulator() {
     setCurrentLoadoutIndex,
   } = useContext(LoadoutContext);
   const { pushRun } = useContext(SimulationRunsContext);
-  const { plan, idolId } = useContext(WorkspaceContext);
+  const { idolId } = useContext(WorkspaceContext);
   const [strategy, setStrategy] = useState("HeuristicStrategy");
   const [simulatorData, setSimulatorData] = useState(null);
   const [running, setRunning] = useState(false);
@@ -75,15 +79,6 @@ export default function Simulator() {
     DEFAULT_NUM_RUNS,
   );
   const [enterPercents, setEnterPercents] = useState(false);
-  const [listenerConfig, setListenerConfig] = useState({
-    enableUseStats: false,
-    enableConditionalUseStats: false,
-    enablePriorityStats: false,
-    enableScoreStats: false,
-    enableSelectRandomCards: false,
-  });
-  const [listenerData, setListenerData] = useState(null);
-
   const [pendingDecision, setPendingDecision] = useState(null);
   const resolveDecisionRef = useRef(null);
   const [progress] = useState(createProgressStore);
@@ -95,9 +90,9 @@ export default function Simulator() {
   const config = useMemo(() => {
     const idolConfig = new IdolConfig(loadout);
     const stageConfig = new StageConfig(stage, loadout.startingEffects);
-    const simulatorConfig = new SimulatorConfig(loadout, listenerConfig);
+    const simulatorConfig = new SimulatorConfig(loadout, DISABLED_LISTENERS);
     return new IdolStageConfig(idolConfig, stageConfig, enterPercents, simulatorConfig);
-  }, [loadout, stage, enterPercents, listenerConfig]);
+  }, [loadout, stage, enterPercents]);
 
   const manualInputCallback = useCallback((decision) => {
     return new Promise((resolve) => {
@@ -119,10 +114,10 @@ export default function Simulator() {
     return loadouts.map((ld) => {
       const idolConfig = new IdolConfig(ld);
       const stageConfig = new StageConfig(stage, ld.startingEffects);
-      const simulatorConfig = new SimulatorConfig(ld, listenerConfig);
+      const simulatorConfig = new SimulatorConfig(ld, DISABLED_LISTENERS);
       return new IdolStageConfig(idolConfig, stageConfig, enterPercents, simulatorConfig);
     });
-  }, [loadouts, stage, enterPercents, listenerConfig]);
+  }, [loadouts, stage, enterPercents]);
 
   useEffect(() => {
     // Seed a hardware-scaled default only when the user has no saved value.
@@ -138,13 +133,9 @@ export default function Simulator() {
 
   const setResult = useCallback(
     (result) => {
-      const { bucketedScores, bucketSize } = bucketScores(result.scores);
-      const medianScore = getMedianScore(result.scores);
-
       console.timeEnd("simulation");
 
-      setSimulatorData({ bucketedScores, medianScore, bucketSize, ...result });
-      setListenerData(result.listenerData);
+      setSimulatorData(result);
       setRunning(false);
 
       pushRun({
@@ -311,16 +302,6 @@ export default function Simulator() {
           />
         )}
 
-        <div data-export-hide="true">
-          <SimulatorSubTools
-            mode={"simulator"}
-            config={config}
-            idolId={config.idol.idolId || idolId}
-            listenerConfig={listenerConfig}
-            setListenerConfig={setListenerConfig}
-          />
-        </div>
-
         <div className={styles.simControls} data-export-hide="true">
           <div className={styles.strategyPicker}>
             <StrategyPicker
@@ -396,11 +377,7 @@ export default function Simulator() {
         <SimulatorResult
           pending={running}
           data={simulatorData}
-          config={config}
-          enterPercents={enterPercents}
-          listenerData={listenerData}
           idolId={config.idol.idolId || idolId}
-          plan={config.idol.plan || plan}
         />
       )}
 
